@@ -76,6 +76,8 @@ ADMIN_PASSWORD=<你的强密码>
 npm run build
 ```
 
+构建产物输出到 `client/dist/`。生产模式下 Express 会自动托管该目录下的静态文件，因此**不需要单独启动前端服务**——后端进程同时提供 API 和前端页面。
+
 ### 5. 使用 PM2 守护进程
 
 ```bash
