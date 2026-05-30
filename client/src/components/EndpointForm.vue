@@ -49,7 +49,7 @@
 </template>
 
 <script setup>
-import { reactive, onMounted } from 'vue'
+import { reactive, computed, watch } from 'vue'
 
 const props = defineProps({
   endpoint: { type: Object, default: null }
@@ -57,7 +57,7 @@ const props = defineProps({
 
 const emit = defineEmits(['submit', 'cancel'])
 
-const isEdit = !!props.endpoint
+const isEdit = computed(() => !!props.endpoint)
 
 const methods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS', 'ANY']
 
@@ -70,16 +70,16 @@ const form = reactive({
   enabled: true,
 })
 
-onMounted(() => {
-  if (props.endpoint) {
-    form.path = props.endpoint.path
-    form.method = props.endpoint.method
-    form.statusCode = props.endpoint.statusCode
-    form.responseBody = props.endpoint.responseBody
-    form.enabled = props.endpoint.enabled
-    form.headerPairs = Object.entries(props.endpoint.responseHeaders || {}).map(([key, value]) => ({ key, value }))
+watch(() => props.endpoint, (ep) => {
+  if (ep) {
+    form.path = ep.path
+    form.method = ep.method
+    form.statusCode = ep.statusCode
+    form.responseBody = ep.responseBody
+    form.enabled = ep.enabled
+    form.headerPairs = Object.entries(ep.responseHeaders || {}).map(([key, value]) => ({ key, value }))
   }
-})
+}, { immediate: true })
 
 function addHeader() {
   form.headerPairs.push({ key: '', value: '' })
