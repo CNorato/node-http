@@ -15,6 +15,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
+// Trust the first proxy to read real client IP from X-Forwarded-For header
+app.set('trust proxy', 1);
+
 // 1. JSON body parser with raw body capture for logging
 app.use(express.json({
   verify: (req, _res, buf) => {

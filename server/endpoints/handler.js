@@ -26,7 +26,7 @@ export default function dynamicHandler(req, res) {
     requestBody: req.rawBody || null,
     responseStatus: match ? match.statusCode : 404,
     matched: !!match,
-    remoteAddress: req.ip || req.socket?.remoteAddress || '',
+    remoteAddress: req.ip || req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || '',
   };
 
   if (match) {
