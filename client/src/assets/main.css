@@ -303,6 +303,7 @@ select.input { cursor: pointer; }
   font-family: 'SF Mono', 'Consolas', monospace;
   font-size: 12px;
   border-bottom: 1px solid rgba(255,255,255,0.04);
+  cursor: pointer;
 }
 .log-entry:hover { background: rgba(255,255,255,0.03); }
 .log-entry.matched { border-left: 2px solid var(--success); }
@@ -312,15 +313,15 @@ select.input { cursor: pointer; }
 .log-path { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .log-status { text-align: center; }
 .log-ip { color: var(--text-muted); font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
-.btn-expand {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 14px;
-  font-family: monospace;
-  width: 24px;
+.expand-icon {
+  display: inline-block;
+  color: var(--accent);
+  font-size: 10px;
   text-align: center;
+  transition: transform 0.15s;
+}
+.expand-icon.open {
+  transform: rotate(-90deg);
 }
 .log-detail {
   grid-column: 1 / -1;

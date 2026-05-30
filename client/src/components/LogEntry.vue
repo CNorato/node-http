@@ -1,11 +1,11 @@
 <template>
-  <div class="log-entry" :class="{ matched: entry.matched, unmatched: !entry.matched }">
+  <div class="log-entry" :class="{ matched: entry.matched, unmatched: !entry.matched }" @click="expanded = !expanded">
     <span class="log-time">{{ formatTime(entry.timestamp) }}</span>
     <span class="log-method" :class="'method-' + entry.method.toLowerCase()">{{ entry.method }}</span>
     <span class="log-path">{{ entry.path }}</span>
     <span class="log-status" :class="statusClass">{{ entry.responseStatus }}</span>
     <span class="log-ip">{{ entry.remoteAddress }}</span>
-    <button class="btn-expand" @click="expanded = !expanded">{{ expanded ? '-' : '+' }}</button>
+    <span class="expand-icon" :class="{ open: expanded }">&#9664;</span>
     <div v-if="expanded" class="log-detail">
       <div class="detail-section">
         <strong>Headers:</strong>
