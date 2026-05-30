@@ -30,8 +30,24 @@
     </div>
 
     <div class="form-group">
-      <label>Response Body</label>
-      <textarea v-model="form.responseBody" class="input body-input" rows="6" placeholder="Response body content..."></textarea>
+      <div class="body-label-row">
+        <label>Response Body</label>
+        <div class="body-toolbar">
+          <label class="checkbox-label">
+            <input v-model="jsonMode" type="checkbox" />
+            JSON
+          </label>
+          <button v-if="jsonMode" type="button" class="btn btn-sm" @click="formatJson">Format</button>
+        </div>
+      </div>
+      <textarea
+        v-if="!jsonMode"
+        v-model="form.responseBody"
+        class="input body-input"
+        rows="8"
+        placeholder="Response body content..."
+      ></textarea>
+      <div v-else ref="editorContainer" class="cm-container"></div>
     </div>
 
     <div class="form-group">
@@ -49,7 +65,16 @@
 </template>
 
 <script setup>
-import { reactive, computed, watch } from 'vue'
+import { reactive, ref, computed, watch, nextTick, onUnmounted } from 'vue'
+import { EditorView, lineNumbers, highlightActiveLineGutter, highlightSpecialChars, drawSelection, dropCursor, rectangularSelection, crosshairCursor, highlightActiveLine, keymap } from '@codemirror/view'
+import { EditorState } from '@codemirror/state'
+import { json } from '@codemirror/lang-json'
+import { oneDark } from '@codemirror/theme-one-dark'
+import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
+import { foldGutter, indentOnInput, syntaxHighlighting, defaultHighlightStyle, bracketMatching, foldKeymap } from '@codemirror/language'
+import { highlightSelectionMatches, searchKeymap } from '@codemirror/search'
+import { closeBrackets, autocompletion, closeBracketsKeymap, completionKeymap } from '@codemirror/autocomplete'
+import { lintKeymap } from '@codemirror/lint'
 
 const props = defineProps({
   endpoint: { type: Object, default: null }
@@ -61,6 +86,9 @@ const isEdit = computed(() => !!props.endpoint)
 
 const methods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS', 'ANY']
 
+const jsonMode = ref(false)
+const editorContainer = ref(null)
+
 const form = reactive({
   path: '',
   method: 'GET',
@@ -70,6 +98,8 @@ const form = reactive({
   enabled: true,
 })
 
+let editorView = null
+
 watch(() => props.endpoint, (ep) => {
   if (ep) {
     form.path = ep.path
@@ -78,8 +108,100 @@ watch(() => props.endpoint, (ep) => {
     form.responseBody = ep.responseBody
     form.enabled = ep.enabled
     form.headerPairs = Object.entries(ep.responseHeaders || {}).map(([key, value]) => ({ key, value }))
+    jsonMode.value = ep.bodyType === 'json'
   }
 }, { immediate: true })
+
+watch(jsonMode, async (on) => {
+  if (on) {
+    await nextTick()
+    createEditor()
+  } else {
+    destroyEditor()
+  }
+})
+
+function createEditor() {
+  if (!editorContainer.value || editorView) return
+
+  const updateListener = EditorView.updateListener.of((update) => {
+    if (update.docChanged) {
+      form.responseBody = update.state.doc.toString()
+    }
+  })
+
+  editorView = new EditorView({
+    state: EditorState.create({
+      doc: form.responseBody,
+      extensions: [
+        lineNumbers(),
+        highlightActiveLineGutter(),
+        highlightSpecialChars(),
+        history(),
+        foldGutter(),
+        drawSelection(),
+        dropCursor(),
+        EditorState.allowMultipleSelections.of(true),
+        indentOnInput(),
+        syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+        bracketMatching(),
+        closeBrackets(),
+        autocompletion(),
+        rectangularSelection(),
+        crosshairCursor(),
+        highlightActiveLine(),
+        highlightSelectionMatches(),
+        keymap.of([
+          ...closeBracketsKeymap,
+          ...defaultKeymap,
+          ...searchKeymap,
+          ...historyKeymap,
+          ...foldKeymap,
+          ...completionKeymap,
+          ...lintKeymap,
+          indentWithTab,
+        ]),
+        json(),
+        oneDark,
+        updateListener,
+      ],
+    }),
+    parent: editorContainer.value,
+  })
+}
+
+function destroyEditor() {
+  if (editorView) {
+    editorView.destroy()
+    editorView = null
+  }
+}
+
+onUnmounted(() => {
+  destroyEditor()
+})
+
+function formatJson() {
+  if (editorView) {
+    const doc = editorView.state.doc.toString()
+    try {
+      const parsed = JSON.parse(doc)
+      const formatted = JSON.stringify(parsed, null, 2)
+      editorView.dispatch({
+        changes: { from: 0, to: editorView.state.doc.length, insert: formatted }
+      })
+    } catch {
+      // invalid JSON, leave as-is
+    }
+  } else {
+    try {
+      const parsed = JSON.parse(form.responseBody)
+      form.responseBody = JSON.stringify(parsed, null, 2)
+    } catch {
+      // invalid JSON, leave as-is
+    }
+  }
+}
 
 function addHeader() {
   form.headerPairs.push({ key: '', value: '' })
@@ -103,6 +225,7 @@ function handleSubmit() {
     responseBody: form.responseBody,
     responseHeaders,
     enabled: form.enabled,
+    bodyType: jsonMode.value ? 'json' : 'text',
   })
 }
 </script>

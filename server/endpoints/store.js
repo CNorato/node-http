@@ -42,6 +42,7 @@ export function create(config) {
     statusCode: config.statusCode || 200,
     responseHeaders: config.responseHeaders || {},
     responseBody: config.responseBody || '',
+    bodyType: config.bodyType || 'text',
     enabled: config.enabled !== undefined ? config.enabled : true,
     createdAt: now,
     updatedAt: now,

@@ -381,9 +381,32 @@ select.input { cursor: pointer; }
 .method-group { flex: 0 0 120px; }
 .path-group { flex: 1; }
 .status-group { flex: 0 0 100px; }
+.body-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.body-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .body-input {
   font-family: 'SF Mono', 'Consolas', monospace;
   resize: vertical;
+}
+.cm-container {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.cm-container .cm-editor {
+  min-height: 160px;
+  max-height: 400px;
+}
+.cm-container .cm-editor .cm-scroller {
+  font-family: 'SF Mono', 'Consolas', monospace;
+  font-size: 13px;
 }
 .headers-editor {
   display: flex;
