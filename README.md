@@ -43,7 +43,7 @@ ADMIN_PASSWORD=your-password
 ### 1. 克隆项目
 
 ```bash
-git clone https://github.com/your-username/node-http.git
+git clone https://github.com/CNorato/node-http.git
 cd node-http
 ```
 
